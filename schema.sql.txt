@@ -1,0 +1,35 @@
+-- =========================
+-- SCHEMA: Insurance Database
+-- =========================
+
+CREATE TABLE customers (
+    customer_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    state VARCHAR(50),
+    join_date DATE
+);
+
+CREATE TABLE policies (
+    policy_id SERIAL PRIMARY KEY,
+    policy_type VARCHAR(20), -- Auto or Home
+    premium_amount NUMERIC(10,2),
+    coverage_limit NUMERIC(12,2)
+);
+
+CREATE TABLE customer_policies (
+    customer_policy_id SERIAL PRIMARY KEY,
+    customer_id INT REFERENCES customers(customer_id),
+    policy_id INT REFERENCES policies(policy_id),
+    policy_start_date DATE,
+    policy_end_date DATE
+);
+
+CREATE TABLE claims (
+    claim_id SERIAL PRIMARY KEY,
+    customer_policy_id INT REFERENCES customer_policies(customer_policy_id),
+    claim_type VARCHAR(50),
+    claim_amount NUMERIC(10,2),
+    claim_status VARCHAR(20), -- Approved, Denied, Pending
+    claim_date DATE
+);

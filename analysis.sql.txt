@@ -1,0 +1,56 @@
+-- =========================
+-- ANALYSIS QUERIES
+-- =========================
+
+-- 1. Customers by state
+SELECT state, COUNT(*) AS total_customers
+FROM customers
+GROUP BY state
+ORDER BY total_customers DESC;
+
+-- 2. Policies by type
+SELECT policy_type, COUNT(*) AS total_policies
+FROM policies
+GROUP BY policy_type;
+
+-- 3. Average premium by policy type
+SELECT policy_type,
+       ROUND(AVG(premium_amount),2) AS avg_premium
+FROM policies
+GROUP BY policy_type;
+
+-- 4. Claims by status
+SELECT claim_status, COUNT(*) AS total_claims
+FROM claims
+GROUP BY claim_status;
+
+-- 5. Total claim amount by policy type
+SELECT p.policy_type,
+       SUM(c.claim_amount) AS total_claim_amount
+FROM claims c
+JOIN customer_policies cp ON c.customer_policy_id = cp.customer_policy_id
+JOIN policies p ON cp.policy_id = p.policy_id
+GROUP BY p.policy_type;
+
+-- 6. Approval rate
+SELECT
+    COUNT(*) FILTER (WHERE claim_status='Approved')::DECIMAL / COUNT(*) AS approval_rate
+FROM claims;
+
+-- 7. Top customers by total claim amount
+SELECT cu.customer_id, cu.first_name, cu.last_name,
+       SUM(c.claim_amount) AS total_claims
+FROM claims c
+JOIN customer_policies cp ON c.customer_policy_id = cp.customer_policy_id
+JOIN customers cu ON cp.customer_id = cu.customer_id
+GROUP BY cu.customer_id, cu.first_name, cu.last_name
+ORDER BY total_claims DESC
+LIMIT 10;
+
+-- 8. Loss ratio (claims / premium)
+SELECT p.policy_type,
+       ROUND(SUM(c.claim_amount)/SUM(p.premium_amount),2) AS loss_ratio
+FROM customer_policies cp
+JOIN policies p ON cp.policy_id = p.policy_id
+LEFT JOIN claims c ON cp.customer_policy_id = c.customer_policy_id
+GROUP BY p.policy_type;
